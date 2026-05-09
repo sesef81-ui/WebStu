@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>WebStudio Engine | نظام الطبقات الاحترافي | مجاني بالكامل</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- مكتبات مجانية للأنيميشن و 3D -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Cairo', sans-serif;
+        }
+
+        :root {
+            --bg: #f5f7fb;
+            --surface: #ffffff;
+            --text: #1a2634;
+            --text-light: #5a6874;
+            --border: #e2e8f0;
+            --primary: #10b981;
+            --primary-dark: #059669;
+            --primary-light: #d1fae5;
+            --danger: #ef4444;
+            --sidebar-width: 300px;
+            --inspector-width: 320px;
+            --toolbar-height: 60px;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            overflow: hidden;
+        }
+
+        /* Auth Screen */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0b2b26 0%, #1a4a3a 100%);
+            padding: 20px;
+        }
+        .auth-card {
+            background: var(--surface);
+            border-radius: 48px;
+            padding: 40px 32px;
+            width: 100%;
+            max-width: 420px;
+            text-align: center;
+            box-shadow: 0 30px 50px -20px rgba(0,0,0,0.3);
+        }
+        .auth-card input {
+            width: 100%;
+            padding: 14px 18px;
+            margin: 10px 0;
+            border-radius: 60px;
+            border: 1px solid var(--border);
+        }
+        .auth-card button {
+            background: var(--primary);
+            color: white;
+            width: 100%;
+            padding: 14px;
+            border-radius: 60px;
+            font-weight: 700;
+            cursor: pointer;
+            border: none;
+        }
+        .toggle-auth {
+            color: var(--primary);
+            margin-top: 20px;
+            cursor: pointer;
+        }
+
+        /* Dashboard */
+        .dashboard {
+            display: none;
+            flex-direction: column;
+            height: 100vh;
+            overflow: hidden;
+        }
+        .toolbar {
+            background: var(--surface);
+            padding: 0 24px;
+            height: var(--toolbar-height);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #10b981, #059669);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+        }
+        .toolbar-btn {
+            background: transparent;
+            border: 1px solid var(--border);
+            padding: 8px 16px;
+            border-radius: 40px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+        .toolbar-btn-primary {
+            background: var(--primary);
+            border: none;
+            color: white;
+        }
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+        }
+        /* لوحة الطبقات Layer Panel */
+        .structure-panel {
+            width: var(--sidebar-width);
+            background: var(--surface);
+            border-left: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+        }
+        .panel-header {
+            padding: 16px 20px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 700;
+            display: flex;
+            justify-content: space-between;
+        }
+        .layers-tree {
+            padding: 12px;
+        }
+        .layer-category {
+            margin-bottom: 16px;
+        }
+        .layer-category h4 {
+            font-size: 13px;
+            color: var(--text-light);
+            margin-bottom: 8px;
+        }
+        .layer-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: var(--bg);
+            border-radius: 16px;
+            margin-bottom: 6px;
+            cursor: grab;
+            transition: all 0.2s;
+            border: 1px solid transparent;
+        }
+        .layer-item:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+        /* Canvas */
+        .canvas {
+            flex: 1;
+            overflow-y: auto;
+            padding: 24px;
+            background: #eef2f6;
+        }
+        .site-preview {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 32px;
+            box-shadow: 0 20px 40px -15px rgba(0,0,0,0.15);
+            overflow: hidden;
+            transition: all 0.2s;
+        }
+        /* Inspector */
+        .inspector-panel {
+            width: var(--inspector-width);
+            background: var(--surface);
+            border-right: 1px solid var(--border);
+            overflow-y: auto;
+            padding: 16px;
+        }
+        .inspector-section {
+            margin-bottom: 24px;
+            border-bottom: 1px solid var(--border);
+            padding-bottom: 16px;
+        }
+        .inspector-field {
+            margin-bottom: 12px;
+        }
+        .inspector-field label {
+            font-size: 12px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .inspector-field input, .inspector-field select {
+            width: 100%;
+            padding: 8px 12px;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+        /* تأثيرات وكلاسات للعناصر المضافة */
+        .glass-card {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(12px);
+            border-radius: 24px;
+            border: 1px solid rgba(255,255,255,0.3);
+        }
+        .neon-border {
+            box-shadow: 0 0 8px var(--primary), 0 0 15px var(--primary);
+        }
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1e293b;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 60px;
+            z-index: 2000;
+        }
+        .wizard-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            z-index: 2100;
+            display: none;
+            align-items: center;
+            justify-content: center;
+        }
+        .wizard-modal {
+            background: white;
+            border-radius: 48px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+        }
+        .mobile-menu-btn { display: none; }
+        @media (max-width: 768px) {
+            .structure-panel, .inspector-panel { display: none; }
+            .mobile-menu-btn { display: block; }
+        }
+    </style>
+</head>
+<body>
+<div id="authScreen" class="auth-container">
+    <div class="auth-card">
+        <i class="fas fa-cube" style="font-size: 56px; color: #10b981;"></i>
+        <h2>WebStudio Engine</h2>
+        <p>نظام طبقات احترافي | مجاني بالكامل</p>
+        <input type="text" id="regName" placeholder="الاسم" style="display: none;">
+        <input type="email" id="authEmail" placeholder="البريد الإلكتروني">
+        <input type="password" id="authPassword" placeholder="كلمة المرور">
+        <button id="authActionBtn">دخول</button>
+        <div class="toggle-auth" id="toggleAuthMode">✨ جديد؟ سجل مجاناً</div>
+    </div>
+</div>
+<div id="wizardOverlay" class="wizard-overlay"><div class="wizard-modal"><h2>🚀 اختر نوع موقعك</h2><div id="wizardOptions"><div data-type="modern" class="layer-item">عصري + Glassmorphism</div><div data-type="cyber" class="layer-item">سايبر بانك نيون</div><div data-type="apple" class="layer-item">Apple Minimal</div></div><button id="wizardFinishBtn">إنشاء</button></div></div>
+
+<div id="dashboard" class="dashboard">
+    <div class="toolbar">
+        <div class="logo-area"><button class="mobile-menu-btn" id="mobileMenuBtn"><i class="fas fa-bars"></i></button><div class="logo">⚡ WebStudio Layers</div></div>
+        <div><button class="toolbar-btn" id="undoBtn"><i class="fas fa-undo"></i></button><button class="toolbar-btn" id="redoBtn"><i class="fas fa-redo"></i></button><button class="toolbar-btn toolbar-btn-primary" id="publishBtn"><i class="fas fa-globe"></i> نشر</button></div>
+        <div><span id="userNameDisplay"></span><button class="toolbar-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i></button></div>
+    </div>
+    <div class="main-layout">
+        <div class="structure-panel" id="structurePanel">
+            <div class="panel-header"><span><i class="fas fa-layer-group"></i> طبقات الموقع (Layers)</span><button id="addCustomLayerBtn" style="background:var(--primary);color:white;border:none;padding:4px 12px;border-radius:20px;">+ طبقة</button></div>
+            <div class="layers-tree" id="layersTree"></div>
+        </div>
+        <div class="canvas" id="canvas"><div class="site-preview" id="sitePreview"></div></div>
+        <div class="inspector-panel" id="inspectorPanel">
+            <div class="inspector-section"><h4>🎨 تصميم عام</h4><div class="inspector-field"><label>اسم الموقع</label><input type="text" id="globalSiteName"></div><div class="inspector-field"><label>اللون الأساسي</label><input type="color" id="globalPrimaryColor"></div><div class="inspector-field"><label>صورة خلفية (رابط)</label><input type="text" id="globalBgImage" placeholder="https://example.com/bg.jpg"></div></div>
+            <div class="inspector-section" id="elementInspector"><h4>⚙️ خصائص العنصر المحدد</h4><p style="font-size:12px;color:gray">انقر على أي عنصر في المعاينة لتعديل خصائصه (نص، رابط صورة، لون)</p><div id="dynamicProps"></div></div>
+            <div class="inspector-section"><h4>📎 إضافة صورة عبر رابط</h4><input type="text" id="quickImageUrl" placeholder="أدخل رابط الصورة"><button id="applyImageBtn">إضافة صورة للقسم المحدد</button></div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-app.js";
+    import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, updateProfile, signOut } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-auth.js";
+    import { getDatabase, ref, set, get, update as dbUpdate } from "https://www.gstatic.com/firebasejs/10.13.0/firebase-database.js";
+    const firebaseConfig = { apiKey: "AIzaSyDNCO9GaDIIRNVFn6PVCZWrsmCbLUxUZDA", authDomain: "messaging-46900.firebaseapp.com", databaseURL: "https://messaging-46900-default-rtdb.firebaseio.com", projectId: "messaging-46900", storageBucket: "messaging-46900.firebasestorage.app", messagingSenderId: "659625864102", appId: "1:659625864102:web:d194ab6528b69d5b2e7d67" };
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getDatabase(app);
+    
+    let currentUser = null;
+    let siteLayers = []; // كل طبقة عبارة عن عنصر UI
+    let selectedLayerId = null;
+    let history = [], historyIndex = -1;
+    
+    function showToast(msg) { let t=document.createElement("div");t.className="toast";t.innerText=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2500);}
+    function saveHistory() { history = history.slice(0, historyIndex+1); history.push(JSON.parse(JSON.stringify(siteLayers))); historyIndex++; if(history.length>40) history.shift(); }
+    function undo() { if(historyIndex>0) { historyIndex--; siteLayers = JSON.parse(JSON.stringify(history[historyIndex])); renderCanvas(); saveToFirebase(); showToast("تراجع"); } }
+    function redo() { if(historyIndex<history.length-1) { historyIndex++; siteLayers = JSON.parse(JSON.stringify(history[historyIndex])); renderCanvas(); saveToFirebase(); showToast("إعادة"); } }
+    
+    async function saveToFirebase() { if(!currentUser) return; await set(ref(db, `sites/${currentUser.uid}/layers`), siteLayers); await set(ref(db, `sites/${currentUser.uid}/settings`), { siteName: document.getElementById("globalSiteName").value, primaryColor: document.getElementById("globalPrimaryColor").value, bgImage: document.getElementById("globalBgImage").value }); }
+    async function loadFromFirebase() { if(!currentUser) return; let layersSnap = await get(ref(db, `sites/${currentUser.uid}/layers`)); let settingsSnap = await get(ref(db, `sites/${currentUser.uid}/settings`)); siteLayers = layersSnap.val() || []; if(siteLayers.length===0) { siteLayers = createDefaultLayers(); } let sets = settingsSnap.val() || {}; document.getElementById("globalSiteName").value = sets.siteName || "موقعي الاحترافي"; document.getElementById("globalPrimaryColor").value = sets.primaryColor || "#10b981"; document.getElementById("globalBgImage").value = sets.bgImage || ""; renderCanvas(); renderLayersTree(); saveHistory(); }
+    
+    function createDefaultLayers() {
+        return [
+            { id: "header1", type: "navbar", content: { title: "الرئيسية", links: ["من نحن","خدمات","اتصل بنا"] }, styles: { bg: "white" } },
+            { id: "hero1", type: "hero", content: { title: "مرحباً بك في محرك الطبقات", subtitle: "اسحب أي عنصر من القائمة وأضفه", buttonText: "ابدأ الآن" }, styles: {} },
+            { id: "features1", type: "features", content: { items: ["تقنية عالية", "تصاميم جاهزة", "دعم فوري"] }, styles: {} },
+            { id: "gallery1", type: "gallery", content: { images: ["https://picsum.photos/id/1015/300/200", "https://picsum.photos/id/104/300/200"] }, styles: {} }
+        ];
+    }
+    
+    function renderLayersTree() {
+        const container = document.getElementById("layersTree");
+        const categories = { ui: "🖥️ واجهات UI", media: "🎬 وسائط", interaction: "✨ تفاعلات", data: "📊 بيانات", advanced: "⚡ متقدم" };
+        const allComponents = [
+            { name: "زر نيون (Neon)", type: "button", category: "ui", props: { text: "زر نيون", neon: true } },
+            { name: "بطاقة زجاجية (Glass Card)", type: "card", category: "ui", props: { title: "بطاقة زجاجية", desc: "تأثير blur", glass: true } },
+            { name: "شريط تنقل (Sticky Nav)", type: "navbar", category: "ui", props: { title: "قائمتي" } },
+            { name: "مودال منبثق", type: "modal", category: "ui", props: { trigger: "افتح النافذة", content: "محتوى المودال" } },
+            { name: "صورة + رابط (Media)", type: "image", category: "media", props: { src: "https://picsum.photos/id/1/300/200", alt: "صورة" } },
+            { name: "معرض صور شبكي", type: "gallery", category: "media", props: { images: ["https://picsum.photos/id/20/300/200","https://picsum.photos/id/30/300/200"] } },
+            { name: "مشغل فيديو (YouTube)", type: "video", category: "media", props: { url: "https://www.youtube.com/embed/dQw4w9WgXcQ" } },
+            { name: "عرض ثلاثي الأبعاد (Three.js)", type: "3d", category: "media", props: { modelType: "cube" } },
+            { name: "تأثير تمرير (Scroll Reveal)", type: "scrollAnim", category: "interaction", props: { animation: "fadeUp" } },
+            { name: "مؤشر ماوس متتبع", type: "cursorEffect", category: "interaction", props: { effect: "glow" } },
+            { name: "نموذج اتصال (Form)", type: "form", category: "data", props: { fields: ["الاسم","البريد"], submitText: "إرسال" } },
+            { name: "دردشة وهمية (Chat UI)", type: "chat", category: "data", props: { messages: ["مرحباً!"] } },
+            { name: "لوحة تحكم بسيطة", type: "dashboard", category: "advanced", props: { stats: { مشاهدات: 1250 } } },
+            { name: "مساعد ذكي (AI mock)", type: "ai", category: "advanced", props: { placeholder: "اسأل الذكاء الاصطناعي..." } }
+        ];
+        container.innerHTML = "";
+        for(let cat in categories) {
+            let catDiv = document.createElement("div"); catDiv.className = "layer-category";
+            catDiv.innerHTML = `<h4>${categories[cat]}</h4>`;
+            let comps = allComponents.filter(c=>c.category===cat);
+            comps.forEach(comp=>{
+                let item = document.createElement("div"); item.className = "layer-item"; item.draggable = true;
+                item.innerHTML = `<i class="fas fa-puzzle-piece"></i> ${comp.name}`;
+                item.addEventListener("dragstart", (e) => { e.dataTransfer.setData("text/plain", JSON.stringify({ type: comp.type, props: comp.props })); });
+                item.addEventListener("click", () => { addLayerFromComponent(comp.type, comp.props); });
+                catDiv.appendChild(item);
+            });
+            container.appendChild(catDiv);
+        }
+        // عرض الطبقات الموجودة في الموقع
+        let existingTitle = document.createElement("div"); existingTitle.innerHTML = "<hr><h4>📄 طبقات موقعك الحالي</h4>";
+        container.appendChild(existingTitle);
+        siteLayers.forEach(layer => {
+            let layerDiv = document.createElement("div"); layerDiv.className = "layer-item"; layerDiv.style.background = "#f0fdf4";
+            layerDiv.innerHTML = `<i class="fas fa-cube"></i> ${layer.type} <button class="delete-layer-btn" data-id="${layer.id}" style="margin-right:auto;background:none;border:none;color:red;">🗑️</button>`;
+            layerDiv.addEventListener("click", (e) => { if(e.target.tagName!='BUTTON') { selectedLayerId = layer.id; showToast(`تم تحديد: ${layer.type}`); updateInspectorForLayer(layer); } });
+            layerDiv.querySelector(".delete-layer-btn")?.addEventListener("click", (e) => { e.stopPropagation(); siteLayers = siteLayers.filter(l=>l.id!==layer.id); renderCanvas(); renderLayersTree(); saveToFirebase(); saveHistory(); showToast("تم حذف الطبقة"); });
+            container.appendChild(layerDiv);
+        });
+    }
+    
+    function addLayerFromComponent(type, defaultProps) {
+        const newLayer = { id: Date.now()+"_"+Math.random(), type: type, content: defaultProps || {}, styles: { margin: "10px" } };
+        siteLayers.push(newLayer);
+        renderCanvas();
+        renderLayersTree();
+        saveToFirebase();
+        saveHistory();
+        showToast(`تم إضافة ${type}`);
+    }
+    
+    function updateInspectorForLayer(layer) {
+        const dynamicDiv = document.getElementById("dynamicProps");
+        if(!layer) { dynamicDiv.innerHTML = "<p>لم يتم اختيار عنصر</p>"; return; }
+        let html = `<div class="inspector-field"><label>نص/عنوان</label><input type="text" id="editText" value="${layer.content?.title || layer.content?.text || ''}"></div>`;
+        if(layer.type === 'image' || layer.type === 'gallery') {
+            html += `<div class="inspector-field"><label>رابط الصورة (للعنصر الحالي)</label><input type="text" id="editImageUrl" placeholder="أدخل رابط صورة" value="${layer.content?.src || (layer.content?.images?.[0] || '')}"></div><button id="updateImageBtn">تحديث الرابط</button>`;
+        }
+        if(layer.type === 'card') {
+            html += `<div class="inspector-field"><label>الوصف</label><textarea id="editDesc">${layer.content?.desc || ''}</textarea></div>`;
+        }
+        if(layer.type === 'button') {
+            html += `<div class="inspector-field"><label>نص الزر</label><input id="btnText" value="${layer.content?.text || 'زر'}"></div>`;
+        }
+        html += `<div class="inspector-field"><label>لون الخلفية (css)</label><input type="color" id="layerBgColor" value="${layer.styles?.bgColor || '#ffffff'}"></div>`;
+        dynamicDiv.innerHTML = html;
+        document.getElementById("editText")?.addEventListener("change", (e) => { layer.content.title = e.target.value; if(layer.content.text) layer.content.text=e.target.value; renderCanvas(); saveToFirebase(); saveHistory(); });
+        document.getElementById("editImageUrl")?.addEventListener("change", (e) => { if(layer.type==='image') layer.content.src = e.target.value; if(layer.type==='gallery' && layer.content.images) layer.content.images[0]=e.target.value; renderCanvas(); saveToFirebase(); });
+        document.getElementById("updateImageBtn")?.addEventListener("click",()=>{ let val=document.getElementById("editImageUrl").value; if(layer.type==='image') layer.content.src=val; if(layer.type==='gallery' && layer.content.images) layer.content.images[0]=val; renderCanvas(); saveToFirebase(); showToast("تم تحديث الصورة"); });
+        document.getElementById("editDesc")?.addEventListener("change", (e) => { layer.content.desc = e.target.value; renderCanvas(); saveToFirebase(); });
+        document.getElementById("btnText")?.addEventListener("change", (e) => { layer.content.text = e.target.value; renderCanvas(); saveToFirebase(); });
+        document.getElementById("layerBgColor")?.addEventListener("change", (e) => { layer.styles.bgColor = e.target.value; renderCanvas(); saveToFirebase(); });
+    }
+    
+    function renderCanvas() {
+        const container = document.getElementById("sitePreview");
+        const primary = document.getElementById("globalPrimaryColor").value;
+        const bgImage = document.getElementById("globalBgImage").value;
+        let overallStyle = `background: ${bgImage ? `url(${bgImage}) center/cover` : 'white'};`;
+        let html = `<div style="padding:20px;${overallStyle}"><div style="max-width:1200px;margin:0 auto;">`;
+        html += `<div style="display:flex;justify-content:space-between;margin-bottom:20px;"><h2 style="color:${primary};">${document.getElementById("globalSiteName").value}</h2></div>`;
+        siteLayers.forEach(layer => {
+            html += `<div class="editable-layer" data-id="${layer.id}" style="margin-bottom:20px;border:1px solid #e2e8f0;border-radius:24px;padding:16px;background:${layer.styles?.bgColor || '#fff'};">`;
+            if(layer.type === 'hero') html += `<h1 style="color:${primary};">${layer.content.title || 'ترحيب'}</h1><p>${layer.content.subtitle || ''}</p><button style="background:${primary};border:none;padding:8px 16px;border-radius:40px;">${layer.content.buttonText || 'زر'}</button>`;
+            else if(layer.type === 'button') html += `<button class="neon-border" style="background:${primary};padding:12px 24px;border-radius:60px;color:white;cursor:pointer;">${layer.content.text || 'زر نيون'}</button>`;
+            else if(layer.type === 'card') html += `<div class="glass-card" style="padding:20px;text-align:center;"><h3>${layer.content.title || 'بطاقة'}</h3><p>${layer.content.desc || 'وصف رائع'}</p></div>`;
+            else if(layer.type === 'image') html += `<img src="${layer.content.src || 'https://picsum.photos/id/1/300/200'}" style="max-width:100%;border-radius:24px;" alt="صورة">`;
+            else if(layer.type === 'gallery') { html += `<div style="display:flex;gap:12px;flex-wrap:wrap;">`; (layer.content.images || []).forEach(img=>{ html+=`<img src="${img}" style="width:150px;height:100px;object-fit:cover;border-radius:16px;">`; }); html+=`</div>`; }
+            else if(layer.type === 'video') html += `<iframe width="100%" height="250" src="${layer.content.url}" frameborder="0"></iframe>`;
+            else if(layer.type === '3d') html += `<div id="threeContainer_${layer.id}" style="height:250px;background:#000;border-radius:24px;"></div><script>setTimeout(()=>{ if(typeof THREE!=='undefined'){ const scene = new THREE.Scene(); const camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000); const renderer = new THREE.WebGLRenderer(); renderer.setSize(300, 200); document.getElementById('threeContainer_${layer.id}').appendChild(renderer.domElement); const geometry = new THREE.BoxGeometry(); const material = new THREE.MeshStandardMaterial({ color: 0x10b981 }); const cube = new THREE.Mesh(geometry, material); scene.add(cube); camera.position.z = 2; const light = new THREE.DirectionalLight(0xffffff); light.position.set(1,1,1); scene.add(light); function animate(){ requestAnimationFrame(animate); cube.rotation.x += 0.01; cube.rotation.y += 0.01; renderer.render(scene, camera); } animate(); } }, 100);<\/script>`;
+            else if(layer.type === 'scrollAnim') html += `<div data-scroll data-aos="fade-up" style="background:#f0f0f0;padding:20px;text-align:center;">✨ عنصر متحرك عند التمرير ✨</div>`;
+            else if(layer.type === 'form') html += `<form><input placeholder="الاسم" style="display:block;margin-bottom:10px;"><input placeholder="البريد"><button style="background:${primary};">${layer.content.submitText}</button></form>`;
+            else if(layer.type === 'chat') html += `<div style="background:#f1f5f9;border-radius:24px;padding:12px;"><p>💬 ${layer.content.messages?.[0] || 'مرحباً! كيف يمكنني مساعدتك؟'}</p><input placeholder="اكتب رسالة..." style="width:100%;margin-top:8px;"></div>`;
+            else if(layer.type === 'dashboard') html += `<div style="background:#1e293b;color:white;padding:20px;border-radius:24px;"><h4>لوحة التحكم</h4><p>المشاهدات: ${layer.content.stats?.مشاهدات || 1000}</p></div>`;
+            else if(layer.type === 'ai') html += `<div style="border:1px solid ${primary};border-radius:24px;padding:12px;"><i class="fas fa-robot"></i> ${layer.content.placeholder || 'مساعد ذكي'}<input placeholder="اسأل..."></div>`;
+            else if(layer.type === 'navbar') html += `<div style="display:flex;gap:20px;justify-content:center;"><span>🏠 ${layer.content.title}</span> ${(layer.content.links||[]).map(l=>`<span>${l}</span>`).join('')}</div>`;
+            else html += `<div>${layer.type} - محتوى تجريبي</div>`;
+            html += `<div style="margin-top:8px;font-size:10px;color:#aaa;">[${layer.type}] انقر لتعديل الخصائص</div></div>`;
+        });
+        html += `</div></div>`;
+        container.innerHTML = html;
+        document.querySelectorAll('.editable-layer').forEach(el => {
+            el.addEventListener('click', (e) => { e.stopPropagation(); const id = el.dataset.id; const found = siteLayers.find(l=>l.id==id); if(found) { selectedLayerId = id; updateInspectorForLayer(found); showToast(`تعديل: ${found.type}`); } });
+        });
+        if (typeof gsap !== 'undefined') { gsap.utils.toArray("[data-scroll]").forEach(el => { gsap.fromTo(el, { opacity: 0, y: 50 }, { opacity: 1, y: 0, duration: 1, scrollTrigger: { trigger: el, start: "top 80%" } }); }); }
+    }
+    
+    document.getElementById("addCustomLayerBtn")?.addEventListener("click", () => { showToast("اسحب أي عنصر من القائمة إلى المعاينة أو اضغط عليه"); });
+    document.getElementById("applyImageBtn")?.addEventListener("click", () => { let url = document.getElementById("quickImageUrl").value; if(!url) return showToast("أدخل رابط صورة"); let selected = siteLayers.find(l=>l.id===selectedLayerId); if(selected && (selected.type==='image' || selected.type==='gallery')) { if(selected.type==='image') selected.content.src = url; if(selected.type==='gallery' && selected.content.images) selected.content.images[0]=url; renderCanvas(); saveToFirebase(); saveHistory(); showToast("تم تحديث الصورة بنجاح"); } else { let newImgLayer = { id: Date.now()+"_img", type: "image", content: { src: url }, styles: {} }; siteLayers.push(newImgLayer); renderCanvas(); renderLayersTree(); saveToFirebase(); saveHistory(); showToast("تم إضافة طبقة صورة جديدة"); } });
+    document.getElementById("globalSiteName")?.addEventListener("change",()=>{renderCanvas();saveToFirebase();saveHistory();});
+    document.getElementById("globalPrimaryColor")?.addEventListener("change",()=>{renderCanvas();saveToFirebase();});
+    document.getElementById("globalBgImage")?.addEventListener("change",()=>{renderCanvas();saveToFirebase();});
+    document.getElementById("undoBtn")?.addEventListener("click",undo);
+    document.getElementById("redoBtn")?.addEventListener("click",redo);
+    document.getElementById("publishBtn")?.addEventListener("click",()=>{ if(currentUser) { let link=`${window.location.origin}${window.location.pathname}?site=${currentUser.uid}`; navigator.clipboard.writeText(link); showToast("✅ تم نسخ رابط النشر"); } });
+    
+    // سحب وإفلات مباشر على الكانفاس
+    const canvasDiv = document.getElementById("canvas");
+    canvasDiv.addEventListener("dragover", (e) => e.preventDefault());
+    canvasDiv.addEventListener("drop", (e) => { e.preventDefault(); let raw = e.dataTransfer.getData("text/plain"); if(raw) { let comp = JSON.parse(raw); addLayerFromComponent(comp.type, comp.props); } });
+    
+    // Auth
+    let isRegister = false;
+    document.getElementById("toggleAuthMode").onclick = () => { isRegister = !isRegister; document.getElementById("regName").style.display = isRegister ? "block" : "none"; document.getElementById("authActionBtn").innerText = isRegister ? "إنشاء حساب" : "دخول"; };
+    document.getElementById("authActionBtn").onclick = async () => { let email=document.getElementById("authEmail").value, pass=document.getElementById("authPassword").value; if(!email||!pass) return; if(isRegister){ let name=document.getElementById("regName").value; if(!name) return; try{ let cred=await createUserWithEmailAndPassword(auth,email,pass); await updateProfile(cred.user,{displayName:name}); await set(ref(db,`users/${cred.user.uid}`),{name}); showToast(`مرحباً ${name}`); document.getElementById("wizardOverlay").style.display="flex"; } catch(e){showToast(e.message,true);} } else { try{ await signInWithEmailAndPassword(auth,email,pass); } catch(e){showToast("بيانات خاطئة");} } };
+    onAuthStateChanged(auth, async (user) => { if(user){ currentUser=user; document.getElementById("authScreen").style.display="none"; document.getElementById("dashboard").style.display="flex"; document.getElementById("userNameDisplay").innerText=user.displayName||user.email; await loadFromFirebase(); document.getElementById("logoutBtn").onclick=async()=>{await signOut(auth);location.reload();}; } else { document.getElementById("authScreen").style.display="flex"; document.getElementById("dashboard").style.display="none"; } });
+    document.getElementById("wizardFinishBtn")?.addEventListener("click",()=>{ document.getElementById("wizardOverlay").style.display="none"; showToast("تم تهيئة موقعك! اسحب أي عنصر"); });
+    // لجعل الصور تعمل بأي رابط
+    window.updateImageDynamic = (id,url) => { let l = siteLayers.find(l=>l.id===id); if(l && l.content) l.content.src=url; renderCanvas(); saveToFirebase(); };
+    // مكتبة three.js تدعم 3D تلقائياً
+</script>
+</body>
+</html>
